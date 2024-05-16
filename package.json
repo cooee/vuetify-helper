@@ -1,8 +1,8 @@
 {
   "name": "vuetifyHelper",
   "displayName": "vuetifyHelper",
-  "description": "vuetifyHelper",
-  "version": "0.0.1",
+  "description": "vuetify 悬浮提示插件",
+  "version": "0.0.2",
   "engines": {
     "vscode": "^1.89.0"
   },
@@ -13,7 +13,18 @@
     "*"
   ],
   "main": "./out/extension.js",
-  "contributes": {},
+  "contributes": {
+    "configuration": {
+      "title": "vuetifyHelper",
+      "properties": {
+        "vuetifyHelper.customCssPath": {
+          "type": "[string]",
+          "default": [],
+          "description": "自定义css路径"
+        }
+      }
+    }
+  },
   "scripts": {
     "vscode:prepublish": "yarn run compile",
     "compile": "tsc -p ./",

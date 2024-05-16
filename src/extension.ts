@@ -22,36 +22,54 @@ function findClassDefinition(cssContent: string, className: string): string | nu
 	return match ? match[0] : null;
 }
 
-let cssContent = ""
+function findClassDefinitionByList(cssContent: string[], className: string): string | null {
+	for (let i = 0; i < cssContent.length; i++) {
+		const match = findClassDefinition(cssContent[i], className);
+		if (match) {
+			return match;
+		}
+	}
+	return null;
+}
+
+
 
 let hitCache = new Map<string, string>();
-
+let fileList: string[] = [];
+let contentList: string[] = [];
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "test" is now active!');
-	const folderPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
 
+	const folderPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
 	if (!folderPath) {
 		vscode.window.showWarningMessage('No folder or workspace opened');
 		return;
 	}
-	console.log(folderPath);
-	// vuetify\lib\styles
-	// 指定要读取的 node_modules 中的文件路径
+
 	const filePath = path.join(folderPath, 'node_modules', 'vuetify', 'lib', "styles", "main.css");
-	console.log(filePath);
-	fs.readFile(filePath, 'utf8', (err, data) => {
-		if (err) {
-			vscode.window.showErrorMessage('Failed to read file: ' + err.message);
-			return;
+	if (fs.existsSync(filePath)) {
+		fileList.push(filePath);
+	}
+
+	// Use the console to output diagnostic information (console.log) and errors (console.error)
+	// This line of code will only be executed once when your extension is activated
+	console.log('Congratulations, your extension "test" is now active!');
+	let customCssPath: any = vscode.workspace.getConfiguration('vuetifyHelper').get('customCssPath');
+	if (customCssPath && customCssPath.length > 0) {
+		const filePath = path.join(folderPath, customCssPath[0]);
+
+		if (fs.existsSync(filePath)) {
+			fileList.push(filePath);
 		}
-		cssContent = data;
-		// 显示文件内容或进行其他处理
-		// vscode.window.showInformationMessage(data);
+	}
+
+	fileList.forEach(file => {
+		console.log("filePath", filePath);
+		fs.readFile(file, 'utf8', (err, data) => {
+			contentList.push(data);
+		});
 	});
 
 	let provider = vscode.languages.registerHoverProvider(file, {
@@ -62,7 +80,7 @@ export function activate(context: vscode.ExtensionContext) {
 				let hover = hitCache.get(word)
 				return new vscode.Hover(`\`\`\`scss\n${hover}\n\`\`\``);
 			}
-			let hover = findClassDefinition(cssContent, word);
+			let hover = findClassDefinitionByList(contentList, word);
 			if (!hover) {
 				return;
 			}
